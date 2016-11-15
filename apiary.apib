@@ -1,0 +1,484 @@
+FORMAT: 1A
+HOST: https://secure.cleveranalytics.com/rest/projects/
+
+# Metadata 2.0
+
+Draft of new metadata for redesigned CleverAnalytics Platform
+
+## TODO
+* Is it necessary to use complete URLs for datasets, fcSelectors, featureCollections etc.?
+* Find out how to compute group aggregations
+* Find out how to define `linkedDetail`
+* Design popUp metadata
+* Design featureCollection metadata
+* Remove `groups.json`?
+* How to find out polygon granularity
+
+## PopUp
+
+REMOVED popUp metadata.
+
+PopUp content is automatically prepared according to feature `dataset`, selected `dashboard` and `indicator`:
+* **Title and Subtitle** from `dataset.properties.featureTitle`
+* **Main metric** from selected `indicator` property. Special position or first item in grid.
+* **Other metric grid** some other metrics in grid selected from `dashboard.content.indicator`
+
+## MapOptions [/{project}/mapOptions]
+
+### Get mapOptions [GET]
+
+Get default project mapOptions. It can be overridden per view, but you're encouraged not to do so.
+
+#### TODO
+* Move it to `/project` resource?
+
+#### Changes
+* REMOVED `maxBounds`
+* EDITED `center`, `zoom`
+
++ Response 200 (application/json)
+
+        {
+            "center": [49.8, 16],
+            "zoom": 8,
+            "minZoom": 0,
+            "maxZoom": 18,
+            "tileLayer": "mapbox"
+        }
+
+## Project NEW [/{project}/project]
+
+### Get project [GET]
+
+Get default project settings. Other than `bootstrap/project`
+
+#### TODO
+* Move `viewCategories` here?
+
++ Response 200 (application/json)
+
+        {
+            "language": "en",
+            "dataInfo": "All views use<br>current census data."
+        }
+
+## Datasets [/{project}/datasets]
+
+### Get datasets [GET]
+
+Get all project datasets.
+
+#### TODO
+* Is DWH dataset `searchBy` enabled?
+* Move somewhere `title` and `searchBy`?
+* Could be `crs` other than 4326 or 3857? Move to `ref`?
+* How to make aggregations with DWH? Formerly `aggregation`
+* How to connect selected feature with subselection of catchment area feature. Currently `ref.primaryKey==store_id` + `ref.featureKey==area_code` is used in `linkedDetail` state.
+* Automatic DWH geometries? `[x, y]` for points, `[x_min...y_max]` for polygons and lines.
+
+#### Changes
+* EDITED `properties.includingVat` and `properties.period` removed in favor of `properties.attribution`
+* REMOVED `properties.icon` was used for search categories. Style from featureCollections will be used instead.
+* ADDED `properties.emptyViewMessage` message displayed if feature has no dashboard
+* ADDED `ref.size` recommended page size
+
++ Response 200 (application/json)
+
+        [
+            {
+                "name": "county-dwh",
+                "type": "dataset",
+                "title": "County"
+                "properties": {
+                    "period": "2015",
+                    "icon": "fa-star-o",
+                    "attribution": "All entries incl. VAT",
+                    "featureTitle": <Expression>,
+                    "featureSubtitle": <Expression>,
+                    "emptyViewMessage": <Expression>,
+                    "notFoundMessage": "No area matches your search terms"
+                },
+                "searchBy": ["nazev"],
+                "ref": {
+                    "type": "dwh",
+                    "table": "county",
+                    "primaryKey": "area_code",
+                    "featureKey": "area_subcode",
+                    "properties": [],
+                    "geometry": "county-vt",
+                    "size": 500
+                }
+            },
+            {
+                "name": "county-vt",
+                "type": "dataset",
+                "properties": {
+                    "crs": 4326
+                },
+                "ref": {
+                    "type": "vt",
+                    "layer": "county",
+                    "primaryKey": "area_code"
+                }
+            }
+        ]
+
+## Views [/{project}/views]
+
+### Get views [GET]
+
+Get all views.
+
+#### TODO
+* Move `landing` properties to content?
+* Move `invisibleFeatureCollections` to `fcSelector` with flag `invisible`?
+* How to change filters from `filterGroup`?
+
+#### Changes
+* REMOVED `featureCollection` moved to dashboard indicators
+* REMOVED `landing.title` must be the same as `content.title`
+* REMOVED `content.grid` moved to `dashboard`
+* REMOVED `content.chart`
+* REMOVED `content.chartGroup`
+* REMOVED `content.featureQueries` moved to `dashboard`
+* REMOVED `content.measureTool` - now always available
+* REMOVED `content.filters` - dropdown filter is removed (currently used for market share views)
+
++ Response 200 (application/json)
+
+        [
+            {
+                "name": "area-overview",
+                "type": "viewInfoPanel",
+                "category": "base",
+                "landing": {
+                    "icon": {
+                        "type": "image",
+                        "id": "blue-1"
+                    },
+                    "description": "Visualization of revenue accross country"
+                },
+                "content": {
+                    "title": "County",
+                    "dashboard": "/rest/projects/$projectId/metadata/uicomponents/overviewDashboard",
+                    "fcSelector": "/rest/projects/$projectId/metadata/uicomponents/fcSelector",
+                    "filterGroup": {}
+                },
+                "mapOptions": <MapOptions>
+            }
+        ]
+
+## View Categories [/{project}/viewCategories]
+
+### Get viewCategories [GET]
+
+Get all viewCategories.
+
+#### TODO
+* Move this to `/project` resource?
+* Change viewCategories from feature-based to favourite, recent etc.?
+
++ Response 200 (application/json)
+
+        [
+            {
+                "name": "overview",
+                "title": "Store Performance"
+            },
+            {
+                "name": "potential",
+                "title": "Business Potential"
+            }
+        ]
+
+## Dashboard [/{project}/{overviewDashboard}]
+
+### Get dashboard metadata [GET]
+
+Get dashboard metadata. Formerly known as **infoPanel**.
+Now the dashboard for view should have the same capabilities
+as dashboard for selected feature (pinpoint, polygon etc.).
+
+#### Parameters
+* **name** - referenced in `view` or `featureCollection`
+* **id** (optional) - if feature is selected
+* **featureCollection** (optional) - if feature is selected
+
+#### TODO
+* What can be content, only indicators and grid?
+* How to inherit featureQueries from view?
+* Compute property values from feature or catchment-area or radius query?
+* Define simplified grid content
+* Define complete fitness object (style, sort, format, mouseover behavior)
+
+#### Changes (vs. infoPanel)
+* EDITED `type` is dashboard
+* REMOVED `extraFeatureCollections` not necessary in dashboard
+* REMOVED `content.title` and `content.subtitle` inherited from dataset or view
+* REMOVED `gridGroup`
+* REMOVED `chart`
+* REMOVED `chartGroup`
+* REMOVED `productList`
+* REMOVED `featureList`
+* REMOVED `legend`
+* REMOVED `radiusQuery`
+* REMOVED `featureQueries` the query can be created from other content and `/metrics` resource
+* REMOVED `featureCollection` Must be linked with indicator
+* EDITED `content.grid` Not clickable, always just one metric
+* ADDED `content.indicator` List of clickable indicators, sometimes with catchment area
+
+#### Indicator
+* propertyId: main metric, can be found in `/metrics` resource
+* fitness: definition of fitness metric visualization
+* infoPanel: drill down indicator metadata
+* linkedCollection: linked layer that should be displayed in map when this indicator is active or selected
+* linkedDashboard: infoPanel metadata displayed on linked layer feature click
+
++ Response 200 (application/json)
+
+        {
+            "name": "overviewDashboard",
+            "type": "dashboard",
+            "content": {
+                "indicator": [
+                    {
+                        "propertyId": "revenue",
+                        "fitness": {
+                            "type": "percentile"
+                        },
+                        "infoPanel": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
+                        "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area-revenue",
+                        "linkedDashboard": "/rest/projects/$projectId/metadata/uicomponents/areaRevenueDashboard"
+                    }
+                ],
+                "grid": [
+                    {
+                        "propertyId": "revenue_share",
+                        "title": "Revenue share",
+                        "format": {
+                            "type": "percentage",
+                            "fraction": 1
+                        },
+                        "fitness": {
+                            "type": "percentile"
+                        },
+                        "hint": <Expression|String>
+                    }
+                ]
+            }
+        }
+
+## Indicator [/{project}/{revenueIndicator}]
+
+Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
+It should have the same capabilities for overview indicator and feature indicator.
+
+### Get indicator metadata [GET]
+
+#### Parameters
+* **name** - referenced in `view` or `featureCollection`
+* **propertyId** - main indicator propertyId
+* **id** (optional) - if feature is selected
+* **featureCollection** (optional) - if feature is selected
+
+#### TODO
+* Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank|_ntile)`
+* Define `blocks` content
+* How to simplify featureCollection (catchment-area) definition?
+* Do we need `extraFeatureCollections`?
+* Define `fitness` options
+* What can be inside charts? Selected metric split into parts (revenue per month/day of week etc.)?
+
+#### Changes
+* EDITED `type` is `indicator`
+* REMOVED `content.title` and `content.subtitle` replaced with former `content.businessGoal`
+* REMOVED `content.businessGoal` computed automatically from parameter **propertyId**
+* REMOVED `content.linkedDetails`
+* REMOVED `content.filters` both slider and dropdown filters removed
+* REMOVED `content.grid` moved to `blocks` or removed
+* EDITED `content.legend` moved to `blocks` transformed to `histogram`
+* EDITED `content.chart` moved to `blocks`
+* EDITED `content.chartGroup` moved to `blocks`
+* EDITED `content.productList` moved to `blocks` transformed to `ranking`
+* REMOVED `extraFeatureCollections`
+
++ Response 200 (application/json)
+
+        {
+            "name": "revenueIndicator",
+            "type": "indicator",
+            "featureCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
+            "content": {
+                "fitness": {
+                    "percentile": <Options>,
+                    "trend": <Options>,
+                    "ranking": <Options>,
+                    "semaphore": <Options>
+                },
+                "blocks": [
+                    {
+                        "type": "histogram"
+                    },
+                    {
+                        "type": "ranking",
+                        "size": 10,
+                        "sort": "desc"
+                    },
+                    {
+                        "type": "barchart",
+                        "title": "Revenue per day of week and sex",
+                        "mainSplit": "day",
+                        "stackSplit": null,
+                        "dualSplit": "sex"
+                    },
+                    {
+                        "type": "piechart",
+                        "title": "Revenue per day of week",
+                        "mainSplit": "day"
+                    }
+                ]
+            }
+        }
+
+## Metrics NEW [/{project}/metrics]
+
+### Get metrics [GET]
+
+Get all project metrics.
+
+#### TODO
+* Make sure we can automatically compute percentile, ntile, ranking, trend from each metric
+
++ Response 200 (application/json)
+
+        [
+            {
+                "id": "revenue",
+                "title": "Revenue",
+                "hint": "Total annual revenue",
+                "format": {
+                    "type": "currency",
+                    "fraction": 0
+                },
+                "query": {
+                    "type": "function_sum",
+                    "content": [
+                        {
+                            "type": "property",
+                            "value": "stores_dwh.revenue"
+                        }
+                    ]
+                }
+            }
+        ]
+
+## FeatureCollection [/{project}/featureCollection/index]
+
+### Get featureCollections [GET]
+
+Get all featureCollections.
+
+### TODO
+* How to create multiple store types?
+* How to define distribution (thresholds) of catchment area features?
+
+### Changes
+* EDITED `type` is always `featureCollection`
+* EDITED `data` actually removed, replaced with `dataset` which is DWH dataset with geometry
+* REMOVED `title` legend title and formatting is derived from `propertyId`
+* REMOVED `action.hover`
+* REMOVED `action.select` all params can be derived from `dataset` and `propertyId`, metadata from `infoPanel`
+* REMOVED `detailInfoPanel` defined in corresponding indicator metadata
+* REMOVED `groupInfoPanel` should have the same content as `infoPanel`
+* REMOVED `defaultStyle` replaced with link for `style`
+* ADDED `style`
+
++ Response 200 (application/json)
+
+        [
+            {
+                "name": "catchment-area-revenue",
+                "type": "featureCollection",
+                "dataset": "/rest/projects/$projectId/metadata/datasets/county-dwh",
+                "style": "/rest/projects/$projectId/metadata/styles/polygon-blue-5"
+            },
+            {
+                "name": "stores-pink",
+                "type": "featureCollection",
+                "dataset": "/rest/projects/$projectId/metadata/datasets/stores-dwh",
+                "filter": [
+                    {
+                        "property": "stores-dwh.type",
+                        "value": "pink",
+                        "operator": "eq"
+                    }
+                ],
+                "style": "/rest/projects/$projectId/metadata/styles/pinpoint-pink"
+            }
+        ]
+
+## Styles NEW [/{project}/styles]
+
+### Get metrics [GET]
+
+Get all project styles.
+
+#### TODO
+* How to propagate heatmap `valueField` and `maxValue`?
+
++ Response 200 (application/json)
+
+        [
+            {
+                "name": "polygon-blue-5",
+                "type": "style",
+                "shape": "polygon",
+                "style": {
+                    "opacity": 1,
+                    "weight": 1,
+                    "fillColor": "#55a3ec",
+                    "color": [
+                        "#89bae7",
+                        "#6cace7",
+                        "#67a3dc",
+                        "#4494df",
+                        "#3391e9"
+                    ],
+                    "fillOpacity": [
+                        0.1,
+                        0.29,
+                        0.48,
+                        0.67,
+                        0.86
+                    ]
+                }
+            },
+            {
+                "name": "pinpoint-pink",
+                "type": "style",
+                "shape": "pinpoint",
+                "style": {
+                    "color": "#FC42D2",
+                    "pinpoint": "pinpoint-pink",
+                    "iconUrl": "./img/icon-pinpoint-pink.png"
+                }
+            },
+            {
+                "name": "heatmap-classic"
+                "type": "style",
+                "shape": "heatmap",
+                "style": {
+                    "gradient": {
+                        ".95": "rgb(215, 25, 28)",
+                        ".75": "rgb(253, 174, 97)",
+                        ".55": "rgb(255, 255, 191)",
+                        ".35": "rgb(141, 211, 144)",
+                        ".15": "rgb(2, 46, 255)"
+                    },
+                    "radius": 40,
+                    "maxOpacity": 0.76,
+                    "scaleRadius": false,
+                    "useLocalExtrema": false
+                }
+            }            
+        ]
