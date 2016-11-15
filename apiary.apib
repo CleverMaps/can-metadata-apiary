@@ -8,11 +8,11 @@ Draft of new metadata for redesigned CleverAnalytics Platform
 ## TODO
 * Is it necessary to use complete URLs for datasets, fcSelectors, featureCollections etc.?
 * Find out how to compute group aggregations
-* Find out how to define `linkedDetail`
 * Design popUp metadata
 * Design featureCollection metadata
 * Remove `groups.json`?
-* How to find out polygon granularity
+* How to find out polygon granularity?
+* How to decide what should be searched?
 
 ## PopUp
 
@@ -70,17 +70,20 @@ Get all project datasets.
 
 #### TODO
 * Is DWH dataset `searchBy` enabled?
-* Move somewhere `title` and `searchBy`?
-* Could be `crs` other than 4326 or 3857? Move to `ref`?
+* Move somewhere `title` to `properties`?
+* Move `searchBy` to `properties` or define searchable fields in `ref.properties`?
+* Could be `crs` other than 4326? Move to `ref`?
 * How to make aggregations with DWH? Formerly `aggregation`
-* How to connect selected feature with subselection of catchment area feature. Currently `ref.primaryKey==store_id` + `ref.featureKey==area_code` is used in `linkedDetail` state.
 * Automatic DWH geometries? `[x, y]` for points, `[x_min...y_max]` for polygons and lines.
+* Review new dataset type Vector Tiles
 
 #### Changes
 * EDITED `properties.includingVat` and `properties.period` removed in favor of `properties.attribution`
 * REMOVED `properties.icon` was used for search categories. Style from featureCollections will be used instead.
 * ADDED `properties.emptyViewMessage` message displayed if feature has no dashboard
 * ADDED `ref.size` recommended page size
+* REMOVED `ref.type==='wfs'` replaced with Vector Tiles
+* ADDED `ref.type==='vt'` new Vector Tiles dataset type
 
 + Response 200 (application/json)
 
@@ -156,10 +159,10 @@ Get all views.
                         "type": "image",
                         "id": "blue-1"
                     },
-                    "description": "Visualization of revenue accross country"
+                    "description": "Visualization of branch revenues across country"
                 },
                 "content": {
-                    "title": "County",
+                    "title": "Revenue Overview",
                     "dashboard": "/rest/projects/$projectId/metadata/uicomponents/overviewDashboard",
                     "fcSelector": "/rest/projects/$projectId/metadata/uicomponents/fcSelector",
                     "filterGroup": {}
