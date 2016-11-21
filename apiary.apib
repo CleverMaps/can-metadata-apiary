@@ -8,8 +8,7 @@ Draft of new metadata for redesigned CleverAnalytics Platform
 ## TODO
 * Is it necessary to use complete URLs for datasets, fcSelectors, featureCollections etc.?
 * Find out how to compute group aggregations
-* Design popUp metadata
-* Design featureCollection metadata
+* Design filter metadata
 * Remove `groups.json`?
 * How to find out polygon granularity?
 * How to decide what should be searched?
@@ -208,11 +207,10 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 * **featureCollection** (optional) - if feature is selected
 
 #### TODO
-* What can be content, only indicators and grid?
-* How to inherit featureQueries from view?
 * Compute property values from feature or catchment-area or radius query?
 * Define simplified grid content
 * Define complete fitness object (style, sort, format, mouseover behavior)
+* Could be blocks on dashboard?
 
 #### Changes (vs. infoPanel)
 * EDITED `type` is dashboard
@@ -231,6 +229,7 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 * ADDED `content.indicator` List of clickable indicators, sometimes with catchment area
 
 #### Indicator
+Array of components. It's always possible to drill down this.
 * propertyId: main metric, can be found in `/metrics` resource
 * fitness: definition of fitness metric visualization
 * infoPanel: drill down indicator metadata
@@ -250,7 +249,7 @@ as dashboard for selected feature (pinpoint, polygon etc.).
                             "type": "percentile"
                         },
                         "infoPanel": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
-                        "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area-revenue",
+                        "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
                         "linkedDashboard": "/rest/projects/$projectId/metadata/uicomponents/areaRevenueDashboard"
                     }
                 ],
@@ -281,16 +280,18 @@ It should have the same capabilities for overview indicator and feature indicato
 #### Parameters
 * **name** - referenced in `view` or `featureCollection`
 * **propertyId** - main indicator propertyId
-* **id** (optional) - if feature is selected
-* **featureCollection** (optional) - if feature is selected
+* **id** (optional) - if feature is selected, potentially recursive
+* **featureCollection** (optional) - if feature is selected, potentially recursive
 
 #### TODO
-* Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank|_ntile)`
+* Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank)`
 * Define `blocks` content
 * How to simplify featureCollection (catchment-area) definition?
 * Do we need `extraFeatureCollections`?
 * Define `fitness` options
 * What can be inside charts? Selected metric split into parts (revenue per month/day of week etc.)?
+* Barcharts/Piecharts from map categories?
+* How to compute chart values, categories
 
 #### Changes
 * EDITED `type` is `indicator`
@@ -315,8 +316,7 @@ It should have the same capabilities for overview indicator and feature indicato
                 "fitness": {
                     "percentile": <Options>,
                     "trend": <Options>,
-                    "ranking": <Options>,
-                    "semaphore": <Options>
+                    "ranking": <Options>
                 },
                 "blocks": [
                     {
@@ -332,12 +332,14 @@ It should have the same capabilities for overview indicator and feature indicato
                         "title": "Revenue per day of week and sex",
                         "mainSplit": "day",
                         "stackSplit": null,
-                        "dualSplit": "sex"
+                        "dualSplit": "sex",
+                        "tooltip": <Expression>
                     },
                     {
                         "type": "piechart",
                         "title": "Revenue per day of week",
-                        "mainSplit": "day"
+                        "mainSplit": "day",
+                        "tooltip": <Expression>
                     }
                 ]
             }
@@ -384,6 +386,7 @@ Get all featureCollections.
 ### TODO
 * How to create multiple store types?
 * How to define distribution (thresholds) of catchment area features?
+* `dataset` is Vector Tile dataset or DWH dataset?
 
 ### Changes
 * EDITED `type` is always `featureCollection`
@@ -393,16 +396,18 @@ Get all featureCollections.
 * REMOVED `action.select` all params can be derived from `dataset` and `propertyId`, metadata from `infoPanel`
 * REMOVED `detailInfoPanel` defined in corresponding indicator metadata
 * REMOVED `groupInfoPanel` should have the same content as `infoPanel`
-* REMOVED `defaultStyle` replaced with link for `style`
+* EDITED `defaultStyle` replaced with `distribution` and link for `style`
 * ADDED `style`
+* ADDED `distribution` any of 'geometric', 'linear' or array of thresholds, formerly `type=='static'`
 
 + Response 200 (application/json)
 
         [
             {
-                "name": "catchment-area-revenue",
+                "name": "catchment-area",
                 "type": "featureCollection",
                 "dataset": "/rest/projects/$projectId/metadata/datasets/county-dwh",
+                "distribution": "geometric",
                 "style": "/rest/projects/$projectId/metadata/styles/polygon-blue-5"
             },
             {
@@ -422,7 +427,7 @@ Get all featureCollections.
 
 ## Styles NEW [/{project}/styles]
 
-### Get metrics [GET]
+### Get styles [GET]
 
 Get all project styles.
 
