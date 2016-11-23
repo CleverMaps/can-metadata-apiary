@@ -8,10 +8,11 @@ Draft of new metadata for redesigned CleverAnalytics Platform
 ## TODO
 * Is it necessary to use complete URLs for datasets, fcSelectors, featureCollections etc.?
 * Find out how to compute group aggregations
+* How to aggregate non-aggregable features?
 * Design filter metadata
-* Remove `groups.json`?
+* Transform `groups.json`, could define available granularity, no zoom settings
 * How to find out polygon granularity?
-* How to decide what should be searched?
+* How to decide what should be searched? Addresses almost always, then all features that can be in view.
 
 ## PopUp
 
@@ -69,7 +70,7 @@ Get all project datasets.
 
 #### TODO
 * Is DWH dataset `searchBy` enabled?
-* Move somewhere `title` to `properties`?
+* Move `title` to `properties`?
 * Move `searchBy` to `properties` or define searchable fields in `ref.properties`?
 * Could be `crs` other than 4326? Move to `ref`?
 * How to make aggregations with DWH? Formerly `aggregation`
@@ -132,19 +133,20 @@ Get all project datasets.
 Get all views.
 
 #### TODO
-* Move `landing` properties to content?
-* Move `invisibleFeatureCollections` to `fcSelector` with flag `invisible`?
+* Move `invisibleFeatureCollections` to `fcSelector` with flag `invisible`? We can also enable address search project-wide.
 * How to change filters from `filterGroup`?
 
 #### Changes
 * REMOVED `featureCollection` moved to dashboard indicators
-* REMOVED `landing.title` must be the same as `content.title`
+* REMOVED `landing` moved to `content`. Former `landing.title` must be the same as `content.title`
 * REMOVED `content.grid` moved to `dashboard`
 * REMOVED `content.chart`
 * REMOVED `content.chartGroup`
 * REMOVED `content.featureQueries` moved to `dashboard`
 * REMOVED `content.measureTool` - now always available
 * REMOVED `content.filters` - dropdown filter is removed (currently used for market share views)
+* ADDED `content.icon` simplified `landing.icon`, no type, just image ID
+* ADDED `content.description` description from `landing`
 
 + Response 200 (application/json)
 
@@ -153,15 +155,10 @@ Get all views.
                 "name": "area-overview",
                 "type": "viewInfoPanel",
                 "category": "base",
-                "landing": {
-                    "icon": {
-                        "type": "image",
-                        "id": "blue-1"
-                    },
-                    "description": "Visualization of branch revenues across country"
-                },
                 "content": {
                     "title": "Revenue Overview",
+                    "description": "Visualization of branch revenues across country",
+                    "icon": "blue-1",
                     "dashboard": "/rest/projects/$projectId/metadata/uicomponents/overviewDashboard",
                     "fcSelector": "/rest/projects/$projectId/metadata/uicomponents/fcSelector",
                     "filterGroup": {}
@@ -208,7 +205,6 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 
 #### TODO
 * Compute property values from feature or catchment-area or radius query?
-* Define simplified grid content
 * Define complete fitness object (style, sort, format, mouseover behavior)
 * Could be blocks on dashboard?
 
@@ -227,11 +223,12 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 * REMOVED `featureCollection` Must be linked with indicator
 * EDITED `content.grid` Not clickable, always just one metric
 * ADDED `content.indicator` List of clickable indicators, sometimes with catchment area
+* ADDED `content.blocks` List of blocks, only if any metrics (indicator) is selected as default
 
 #### Indicator
 Array of components. It's always possible to drill down this.
 * propertyId: main metric, can be found in `/metrics` resource
-* fitness: definition of fitness metric visualization
+* fitness: type of fitness metric visualization - `percentile` or  `trend`
 * infoPanel: drill down indicator metadata
 * linkedCollection: linked layer that should be displayed in map when this indicator is active or selected
 * linkedDashboard: infoPanel metadata displayed on linked layer feature click
@@ -245,9 +242,7 @@ Array of components. It's always possible to drill down this.
                 "indicator": [
                     {
                         "propertyId": "revenue",
-                        "fitness": {
-                            "type": "percentile"
-                        },
+                        "fitness":  "percentile",
                         "infoPanel": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
                         "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
                         "linkedDashboard": "/rest/projects/$projectId/metadata/uicomponents/areaRevenueDashboard"
@@ -256,17 +251,10 @@ Array of components. It's always possible to drill down this.
                 "grid": [
                     {
                         "propertyId": "revenue_share",
-                        "title": "Revenue share",
-                        "format": {
-                            "type": "percentage",
-                            "fraction": 1
-                        },
-                        "fitness": {
-                            "type": "percentile"
-                        },
-                        "hint": <Expression|String>
+                        "fitness": "trend"
                     }
-                ]
+                ],
+                "blocks": []
             }
         }
 
@@ -286,12 +274,10 @@ It should have the same capabilities for overview indicator and feature indicato
 #### TODO
 * Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank)`
 * Define `blocks` content
-* How to simplify featureCollection (catchment-area) definition?
-* Do we need `extraFeatureCollections`?
-* Define `fitness` options
-* What can be inside charts? Selected metric split into parts (revenue per month/day of week etc.)?
+* Define `fitness` options, maybe not necessary
 * Barcharts/Piecharts from map categories?
-* How to compute chart values, categories
+* How to compute chart values, categories, formulas
+* How to preserve block settings on feature change
 
 #### Changes
 * EDITED `type` is `indicator`
@@ -315,8 +301,7 @@ It should have the same capabilities for overview indicator and feature indicato
             "content": {
                 "fitness": {
                     "percentile": <Options>,
-                    "trend": <Options>,
-                    "ranking": <Options>
+                    "trend": <Options>
                 },
                 "blocks": [
                     {
@@ -361,6 +346,7 @@ Get all project metrics.
                 "id": "revenue",
                 "title": "Revenue",
                 "hint": "Total annual revenue",
+                "sort": "desc",
                 "format": {
                     "type": "currency",
                     "fraction": 0
@@ -385,8 +371,6 @@ Get all featureCollections.
 
 ### TODO
 * How to create multiple store types?
-* How to define distribution (thresholds) of catchment area features?
-* `dataset` is Vector Tile dataset or DWH dataset?
 
 ### Changes
 * EDITED `type` is always `featureCollection`
@@ -398,7 +382,7 @@ Get all featureCollections.
 * REMOVED `groupInfoPanel` should have the same content as `infoPanel`
 * EDITED `defaultStyle` replaced with `distribution` and link for `style`
 * ADDED `style`
-* ADDED `distribution` any of 'geometric', 'linear' or array of thresholds, formerly `type=='static'`
+* ADDED `options.distribution` any of 'geometric', 'linear' or array of thresholds, formerly `type=='static'`
 
 + Response 200 (application/json)
 
@@ -407,7 +391,9 @@ Get all featureCollections.
                 "name": "catchment-area",
                 "type": "featureCollection",
                 "dataset": "/rest/projects/$projectId/metadata/datasets/county-dwh",
-                "distribution": "geometric",
+                "options": {
+                    "distribution": "geometric"
+                },
                 "style": "/rest/projects/$projectId/metadata/styles/polygon-blue-5"
             },
             {
@@ -430,9 +416,6 @@ Get all featureCollections.
 ### Get styles [GET]
 
 Get all project styles.
-
-#### TODO
-* How to propagate heatmap `valueField` and `maxValue`?
 
 + Response 200 (application/json)
 
@@ -469,24 +452,6 @@ Get all project styles.
                     "color": "#FC42D2",
                     "pinpoint": "pinpoint-pink",
                     "iconUrl": "./img/icon-pinpoint-pink.png"
-                }
-            },
-            {
-                "name": "heatmap-classic"
-                "type": "style",
-                "shape": "heatmap",
-                "style": {
-                    "gradient": {
-                        ".95": "rgb(215, 25, 28)",
-                        ".75": "rgb(253, 174, 97)",
-                        ".55": "rgb(255, 255, 191)",
-                        ".35": "rgb(141, 211, 144)",
-                        ".15": "rgb(2, 46, 255)"
-                    },
-                    "radius": 40,
-                    "maxOpacity": 0.76,
-                    "scaleRadius": false,
-                    "useLocalExtrema": false
                 }
             }            
         ]
