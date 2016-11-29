@@ -13,6 +13,9 @@ Draft of new metadata for redesigned CleverAnalytics Platform
 * Transform `groups.json`, could define available granularity, no zoom settings
 * How to find out polygon granularity?
 * How to decide what should be searched? Addresses almost always, then all features that can be in view.
+* How to save and share application state?
+* How to save added user-defined metrics?
+* Could we remove FeatureCollections at all? Replace with styles...
 
 ## PopUp
 
@@ -68,22 +71,19 @@ Get default project settings. Other than `bootstrap/project`
 
 Get all project datasets.
 
-#### TODO
-* Is DWH dataset `searchBy` enabled?
-* Move `title` to `properties`?
-* Move `searchBy` to `properties` or define searchable fields in `ref.properties`?
-* Could be `crs` other than 4326? Move to `ref`?
-* How to make aggregations with DWH? Formerly `aggregation`
-* Automatic DWH geometries? `[x, y]` for points, `[x_min...y_max]` for polygons and lines.
-* Review new dataset type Vector Tiles
-
 #### Changes
-* EDITED `properties.includingVat` and `properties.period` removed in favor of `properties.attribution`
-* REMOVED `properties.icon` was used for search categories. Style from featureCollections will be used instead.
-* ADDED `properties.emptyViewMessage` message displayed if feature has no dashboard
-* ADDED `ref.size` recommended page size
-* REMOVED `ref.type==='wfs'` replaced with Vector Tiles
+* REMOVED `properties.includingVat` and `properties.period`
+* REMOVED `properties.icon` was used for search categories. Style from
+featureCollections will be used instead.
+* REMOVED `properties.notFoundMessage` generic messages should be enough
 * ADDED `ref.type==='vt'` new Vector Tiles dataset type
+* REMOVED `properties.crs` always using 4326
+* REMOVED `ref.featureKey` not necessary with DWH
+* EDITED `searchBy` is removed and defined in `ref.properties` with `fullTextBoost` attribute
+* ADDED `ref.subtype` dataset subtype (geometry-polygon, geometry-line,
+geometry-point), currently empty if dataset has no geometry
+* ADDED `ref.properties.geometry` something like foreign key to vector tile dataset
+* ADDED `origin` link to original project
 
 + Response 200 (application/json)
 
@@ -91,37 +91,125 @@ Get all project datasets.
             {
                 "name": "county-dwh",
                 "type": "dataset",
-                "title": "County"
+                "title": "County",
+                "description": "Optional description of dataset"
                 "properties": {
-                    "period": "2015",
-                    "icon": "fa-star-o",
-                    "attribution": "All entries incl. VAT",
                     "featureTitle": <Expression>,
-                    "featureSubtitle": <Expression>,
-                    "emptyViewMessage": <Expression>,
-                    "notFoundMessage": "No area matches your search terms"
+                    "featureSubtitle": <Expression>
                 },
-                "searchBy": ["nazev"],
                 "ref": {
                     "type": "dwh",
+                    "subtype": "geometry-polygon",
                     "table": "county",
                     "primaryKey": "area_code",
-                    "featureKey": "area_subcode",
-                    "properties": [],
-                    "geometry": "county-vt",
-                    "size": 500
+                    "properties": [
+                        {
+                            "name": "nazev",
+                            "title": "název",
+                            "column": "nazev",
+                            "type": "string",
+                            "fullTextBoost": 8
+                        },
+                        {
+                            "name": "kod_zsj_d",
+                            "title": "kód ZSJD",
+                            "column": "kod_zsj_d",
+                            "type": "string",
+                            "geometry": "zsjd-vt"
+                        },
+                        {
+                            "name": "x_min",
+                            "column": "x_min",
+                            "type": "double"
+                        },
+                        {
+                            "name": "x_max",
+                            "column": "x_max",
+                            "type": "double"
+                        },
+                        {
+                            "name": "y_min",
+                            "column": "y_min",
+                            "type": "double"
+                        },
+                        {
+                            "name": "y_max",
+                            "column": "y_max",
+                            "type": "double"
+                        }
+                    ]
                 }
             },
             {
-                "name": "county-vt",
+                "name": "store-dwh",
                 "type": "dataset",
+                "title": "My Stores",
+                "description": "Description of my stores dataset",
                 "properties": {
-                    "crs": 4326
+                    "featureTitle": <Expression>,
+                    "featureSubtitle": <Expression>
+                },
+                "ref": {
+                    "type": "dwh",
+                    "subtype": "geometry-point",
+                    "table": "store_table",
+                    "primaryKey": "store_id",
+                    "properties": [
+                        {
+                            "name": "store_id",
+                            "title": "kod pobocky",
+                            "column": "id,
+                            "type": "string"
+                        },
+                        {
+                            "name": "nazev",
+                            "title": "název",
+                            "column": "nazev",
+                            "type": "string",
+                            "fullTextBoost": 4
+                        },
+                        {
+                            "name": "lng",
+                            "column": "lng",
+                            "type": "longitude"
+                        },
+                        {
+                            "name": "lat",
+                            "column": "lat",
+                            "type": "latitude"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "zsjd-vt",
+                "type": "dataset",
+                "title": "Vector tiles for ZSJD",
+                "description": "Optional description of dataset",
+                "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
+                "properties": {
+                    "zoom": {
+                        "min": 5,
+                        "max": 18,
+                        "optimal": 16
+                    }
                 },
                 "ref": {
                     "type": "vt",
-                    "layer": "county",
-                    "primaryKey": "area_code"
+                    "urlTemplate":"https://s3-eu-west-1.amazonaws.com/can-vector-tiles/zcoi9en758vkuuwu/zsjd/{z}/{x}/{y}.pbf"
+                }
+            },
+            {
+                "name": "kraj_wfs"
+                "type": "dataset",
+                "title": "kraj_wfs",
+                "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
+                "ref": {
+                    "type": "wfs",
+                    "workspace": "zcoi9en758vkuuwu",
+                    "layer": "kraj_wfs",
+                    "primaryKey": "kod_kraj",
+                    "properties": []
                 }
             }
         ]
@@ -137,6 +225,7 @@ Get all views.
 * How to change filters from `filterGroup`?
 
 #### Changes
+* EDITED `type` is `"view"`
 * REMOVED `featureCollection` moved to dashboard indicators
 * REMOVED `landing` moved to `content`. Former `landing.title` must be the same as `content.title`
 * REMOVED `content.grid` moved to `dashboard`
@@ -153,7 +242,7 @@ Get all views.
         [
             {
                 "name": "area-overview",
-                "type": "viewInfoPanel",
+                "type": "view",
                 "category": "base",
                 "content": {
                     "title": "Revenue Overview",
@@ -205,7 +294,7 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 
 #### TODO
 * Compute property values from feature or catchment-area or radius query?
-* Define complete fitness object (style, sort, format, mouseover behavior)
+* Define complete fitness object (style, format, mouseover behavior)
 * Could be blocks on dashboard?
 
 #### Changes (vs. infoPanel)
@@ -229,7 +318,7 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 Array of components. It's always possible to drill down this.
 * propertyId: main metric, can be found in `/metrics` resource
 * fitness: type of fitness metric visualization - `percentile` or  `trend`
-* infoPanel: drill down indicator metadata
+* indicatorDetail: drill down indicator metadata
 * linkedCollection: linked layer that should be displayed in map when this indicator is active or selected
 * linkedDashboard: infoPanel metadata displayed on linked layer feature click
 
@@ -243,7 +332,7 @@ Array of components. It's always possible to drill down this.
                     {
                         "propertyId": "revenue",
                         "fitness":  "percentile",
-                        "infoPanel": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
+                        "indicatorDetail": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
                         "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
                         "linkedDashboard": "/rest/projects/$projectId/metadata/uicomponents/areaRevenueDashboard"
                     }
@@ -258,12 +347,12 @@ Array of components. It's always possible to drill down this.
             }
         }
 
-## Indicator [/{project}/{revenueIndicator}]
+## IndicatorDetail [/{project}/{revenueIndicator}]
 
 Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
 It should have the same capabilities for overview indicator and feature indicator.
 
-### Get indicator metadata [GET]
+### Get indicator detail metadata [GET]
 
 #### Parameters
 * **name** - referenced in `view` or `featureCollection`
@@ -309,8 +398,7 @@ It should have the same capabilities for overview indicator and feature indicato
                     },
                     {
                         "type": "ranking",
-                        "size": 10,
-                        "sort": "desc"
+                        "size": 10
                     },
                     {
                         "type": "barchart",
@@ -345,7 +433,7 @@ Get all project metrics.
             {
                 "id": "revenue",
                 "title": "Revenue",
-                "hint": "Total annual revenue",
+                "description": "Total annual revenue",
                 "sort": "desc",
                 "format": {
                     "type": "currency",
@@ -374,7 +462,7 @@ Get all featureCollections.
 
 ### Changes
 * EDITED `type` is always `featureCollection`
-* EDITED `data` actually removed, replaced with `dataset` which is DWH dataset with geometry
+* REMOVED `data` Real `dataset` is derived from active Indicator property
 * REMOVED `title` legend title and formatting is derived from `propertyId`
 * REMOVED `action.hover`
 * REMOVED `action.select` all params can be derived from `dataset` and `propertyId`, metadata from `infoPanel`
@@ -390,7 +478,6 @@ Get all featureCollections.
             {
                 "name": "catchment-area",
                 "type": "featureCollection",
-                "dataset": "/rest/projects/$projectId/metadata/datasets/county-dwh",
                 "options": {
                     "distribution": "geometric"
                 },
@@ -399,14 +486,6 @@ Get all featureCollections.
             {
                 "name": "stores-pink",
                 "type": "featureCollection",
-                "dataset": "/rest/projects/$projectId/metadata/datasets/stores-dwh",
-                "filter": [
-                    {
-                        "property": "stores-dwh.type",
-                        "value": "pink",
-                        "operator": "eq"
-                    }
-                ],
                 "style": "/rest/projects/$projectId/metadata/styles/pinpoint-pink"
             }
         ]
@@ -416,6 +495,9 @@ Get all featureCollections.
 ### Get styles [GET]
 
 Get all project styles.
+
+#### TODO
+* Design style for pinpoints
 
 + Response 200 (application/json)
 
