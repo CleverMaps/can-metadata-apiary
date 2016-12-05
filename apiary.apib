@@ -38,10 +38,12 @@ Get default project mapOptions. It can be overridden per view, but you're encour
 #### Changes
 * REMOVED `maxBounds`
 * EDITED `center`, `zoom`
+* ADDED `type` is `mapOptions`
 
 + Response 200 (application/json)
 
         {
+            "type": "mapOptions",
             "center": [49.8, 16],
             "zoom": 8,
             "minZoom": 0,
@@ -61,6 +63,7 @@ Get default project settings. Other than `bootstrap/project`
 + Response 200 (application/json)
 
         {
+            "type": "project",
             "language": "en",
             "dataInfo": "All views use<br>current census data."
         }
@@ -80,9 +83,9 @@ featureCollections will be used instead.
 * REMOVED `properties.crs` always using 4326
 * REMOVED `ref.featureKey` not necessary with DWH
 * EDITED `searchBy` is removed and defined in `ref.properties` with `fullTextBoost` attribute
-* ADDED `ref.subtype` dataset subtype (geometry-polygon, geometry-line,
-geometry-point), currently empty if dataset has no geometry
-* ADDED `ref.properties.geometry` something like foreign key to vector tile dataset
+* ADDED `ref.subtype` dataset subtype (`geometryPolygon`, `geometryLine`,
+`geometryPoint`), currently empty if dataset has no geometry
+* ADDED `ref.geometry` name of corresponding vector tile dataset
 * ADDED `origin` link to original project
 
 + Response 200 (application/json)
@@ -99,9 +102,10 @@ geometry-point), currently empty if dataset has no geometry
                 },
                 "ref": {
                     "type": "dwh",
-                    "subtype": "geometry-polygon",
+                    "subtype": "geometryPolygon",
                     "table": "county",
                     "primaryKey": "area_code",
+                    "geometry": "zsjd-vt",
                     "properties": [
                         {
                             "name": "nazev",
@@ -114,8 +118,7 @@ geometry-point), currently empty if dataset has no geometry
                             "name": "kod_zsj_d",
                             "title": "kód ZSJD",
                             "column": "kod_zsj_d",
-                            "type": "string",
-                            "geometry": "zsjd-vt"
+                            "type": "string"
                         },
                         {
                             "name": "x_min",
@@ -151,7 +154,7 @@ geometry-point), currently empty if dataset has no geometry
                 },
                 "ref": {
                     "type": "dwh",
-                    "subtype": "geometry-point",
+                    "subtype": "geometryPoint",
                     "table": "store_table",
                     "primaryKey": "store_id",
                     "properties": [
@@ -270,10 +273,12 @@ Get all viewCategories.
 
         [
             {
+                "type": "viewCategory",
                 "name": "overview",
                 "title": "Store Performance"
             },
             {
+                "type": "viewCategory",
                 "name": "potential",
                 "title": "Business Potential"
             }
@@ -369,7 +374,7 @@ It should have the same capabilities for overview indicator and feature indicato
 * How to preserve block settings on feature change
 
 #### Changes
-* EDITED `type` is `indicator`
+* EDITED `type` is `indicatorDetail`
 * REMOVED `content.title` and `content.subtitle` replaced with former `content.businessGoal`
 * REMOVED `content.businessGoal` computed automatically from parameter **propertyId**
 * REMOVED `content.linkedDetails`
@@ -385,7 +390,7 @@ It should have the same capabilities for overview indicator and feature indicato
 
         {
             "name": "revenueIndicator",
-            "type": "indicator",
+            "type": "indicatorDetail",
             "featureCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
             "content": {
                 "fitness": {
@@ -432,6 +437,7 @@ Get all project metrics.
         [
             {
                 "id": "revenue",
+                "type": "metric",
                 "title": "Revenue",
                 "description": "Total annual revenue",
                 "sort": "desc",
