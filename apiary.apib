@@ -6,15 +6,12 @@ HOST: https://secure.cleveranalytics.com/rest/projects/
 Draft of new metadata for redesigned CleverAnalytics Platform
 
 ## TODO
-* Is it necessary to use complete URLs for datasets, fcSelectors, featureCollections etc.?
-* Find out how to compute group aggregations
-* How to aggregate non-aggregable features?
+* Is it necessary to use complete URLs for datasets, markerSelectors, markerCollections etc.?
 * Design filter metadata
 * Transform `groups.json`, could define available granularity, no zoom settings
 * How to find out polygon granularity?
 * How to decide what should be searched? Addresses almost always, then all features that can be in view.
 * How to save and share application state?
-* How to save added user-defined metrics?
 * Could we remove FeatureCollections at all? Replace with styles...
 
 ## PopUp
@@ -23,49 +20,38 @@ REMOVED popUp metadata.
 
 PopUp content is automatically prepared according to feature `dataset`, selected `dashboard` and `indicator`:
 * **Title and Subtitle** from `dataset.properties.featureTitle`
-* **Main metric** from selected `indicator` property. Special position or first item in grid.
-* **Other metric grid** some other metrics in grid selected from `dashboard.content.indicator`
-
-## MapOptions [/{project}/mapOptions]
-
-### Get mapOptions [GET]
-
-Get default project mapOptions. It can be overridden per view, but you're encouraged not to do so.
-
-#### TODO
-* Move it to `/project` resource?
-
-#### Changes
-* REMOVED `maxBounds`
-* EDITED `center`, `zoom`
-* ADDED `type` is `mapOptions`
-
-+ Response 200 (application/json)
-
-        {
-            "type": "mapOptions",
-            "center": [49.8, 16],
-            "zoom": 8,
-            "minZoom": 0,
-            "maxZoom": 18,
-            "tileLayer": "mapbox"
-        }
+* **Main indicator** from currently selected `indicator`. Special position or first item in grid.
+* **Other indicators grid** some other indicators in grid automatically selected from (parent) `dashboard.content.indicator`
 
 ## Project NEW [/{project}/project]
 
 ### Get project [GET]
 
-Get default project settings. Other than `bootstrap/project`
+Get default project settings. Other than `bootstrap/project`. MapOptions and ViewCategories were moved here.
 
 #### TODO
-* Move `viewCategories` here?
 
 + Response 200 (application/json)
 
         {
             "type": "project",
             "language": "en",
-            "dataInfo": "All views use<br>current census data."
+            "viewCategories": [
+                {
+                    "name": "overview",
+                    "title": "Store Performance"
+                }
+            ],
+            "mapOptions": {
+                "center": {
+                    "lat": 49.8,
+                    "lng": 16
+                },
+                "zoom": 8,
+                "minZoom": 0,
+                "maxZoom": 18,
+                "tileLayer": "mapbox"
+            }
         }
 
 ## Datasets [/{project}/datasets]
@@ -77,7 +63,7 @@ Get all project datasets.
 #### Changes
 * REMOVED `properties.includingVat` and `properties.period`
 * REMOVED `properties.icon` was used for search categories. Style from
-featureCollections will be used instead.
+markerCollections will be used instead.
 * REMOVED `properties.notFoundMessage` generic messages should be enough
 * ADDED `ref.type==='vt'` new Vector Tiles dataset type
 * REMOVED `properties.crs` always using 4326
@@ -95,7 +81,7 @@ featureCollections will be used instead.
                 "name": "county-dwh",
                 "type": "dataset",
                 "title": "County",
-                "description": "Optional description of dataset"
+                "description": "Optional description of dataset",
                 "properties": {
                     "featureTitle": <Expression>,
                     "featureSubtitle": <Expression>
@@ -161,7 +147,7 @@ featureCollections will be used instead.
                         {
                             "name": "store_id",
                             "title": "kod pobocky",
-                            "column": "id,
+                            "column": "id",
                             "type": "string"
                         },
                         {
@@ -224,7 +210,7 @@ featureCollections will be used instead.
 Get all views.
 
 #### TODO
-* Move `invisibleFeatureCollections` to `fcSelector` with flag `invisible`? We can also enable address search project-wide.
+* Remove `invisibleFeatureCollections`. Enable universal address search differently.
 * How to change filters from `filterGroup`?
 
 #### Changes
@@ -259,43 +245,18 @@ Get all views.
             }
         ]
 
-## View Categories [/{project}/viewCategories]
-
-### Get viewCategories [GET]
-
-Get all viewCategories.
-
-#### TODO
-* Move this to `/project` resource?
-* Change viewCategories from feature-based to favourite, recent etc.?
-
-+ Response 200 (application/json)
-
-        [
-            {
-                "type": "viewCategory",
-                "name": "overview",
-                "title": "Store Performance"
-            },
-            {
-                "type": "viewCategory",
-                "name": "potential",
-                "title": "Business Potential"
-            }
-        ]
-
 ## Dashboard [/{project}/{overviewDashboard}]
 
 ### Get dashboard metadata [GET]
 
 Get dashboard metadata. Formerly known as **infoPanel**.
 Now the dashboard for view should have the same capabilities
-as dashboard for selected feature (pinpoint, polygon etc.).
+as dashboard for selected feature (marker, polygon etc.).
 
 #### Parameters
 * **name** - referenced in `view` or `featureCollection`
 * **id** (optional) - if feature is selected
-* **featureCollection** (optional) - if feature is selected
+* **dataset** (optional) - if feature is selected
 
 #### TODO
 * Compute property values from feature or catchment-area or radius query?
@@ -313,19 +274,16 @@ as dashboard for selected feature (pinpoint, polygon etc.).
 * REMOVED `featureList`
 * REMOVED `legend`
 * REMOVED `radiusQuery`
-* REMOVED `featureQueries` the query can be created from other content and `/metrics` resource
+* REMOVED `featureQueries` the query can be created from other content and `/indicators` resource
 * REMOVED `featureCollection` Must be linked with indicator
-* EDITED `content.grid` Not clickable, always just one metric
+* EDITED `content.grid` Not clickable, always just one attribute
 * ADDED `content.indicator` List of clickable indicators, sometimes with catchment area
-* ADDED `content.blocks` List of blocks, only if any metrics (indicator) is selected as default
 
 #### Indicator
 Array of components. It's always possible to drill down this.
-* propertyId: main metric, can be found in `/metrics` resource
-* fitness: type of fitness metric visualization - `percentile` or  `trend`
+* id: indicator ID, can be found in `/metrics` resource
+* fitness: type of fitness indicator visualization - `percentile` or  `trend`
 * indicatorDetail: drill down indicator metadata
-* linkedCollection: linked layer that should be displayed in map when this indicator is active or selected
-* linkedDashboard: infoPanel metadata displayed on linked layer feature click
 
 + Response 200 (application/json)
 
@@ -335,11 +293,9 @@ Array of components. It's always possible to drill down this.
             "content": {
                 "indicator": [
                     {
-                        "propertyId": "revenue",
+                        "id": "revenue",
                         "fitness":  "percentile",
-                        "indicatorDetail": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator",
-                        "linkedCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
-                        "linkedDashboard": "/rest/projects/$projectId/metadata/uicomponents/areaRevenueDashboard"
+                        "indicatorDetail": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator"
                     }
                 ],
                 "grid": [
@@ -347,8 +303,7 @@ Array of components. It's always possible to drill down this.
                         "propertyId": "revenue_share",
                         "fitness": "trend"
                     }
-                ],
-                "blocks": []
+                ]
             }
         }
 
@@ -360,10 +315,10 @@ It should have the same capabilities for overview indicator and feature indicato
 ### Get indicator detail metadata [GET]
 
 #### Parameters
-* **name** - referenced in `view` or `featureCollection`
-* **propertyId** - main indicator propertyId
-* **id** (optional) - if feature is selected, potentially recursive
-* **featureCollection** (optional) - if feature is selected, potentially recursive
+* **name** - referenced in `view`
+* **id** - indicator id
+* **featureId** (optional) - if feature is selected, potentially recursive
+* **featureDataset** (optional) - if feature is selected, potentially recursive
 
 #### TODO
 * Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank)`
@@ -375,6 +330,7 @@ It should have the same capabilities for overview indicator and feature indicato
 
 #### Changes
 * EDITED `type` is `indicatorDetail`
+* REMOVED `featureCollection` added/updated automatically based on granularity and feature filters
 * REMOVED `content.title` and `content.subtitle` replaced with former `content.businessGoal`
 * REMOVED `content.businessGoal` computed automatically from parameter **propertyId**
 * REMOVED `content.linkedDetails`
@@ -391,7 +347,6 @@ It should have the same capabilities for overview indicator and feature indicato
         {
             "name": "revenueIndicator",
             "type": "indicatorDetail",
-            "featureCollection": "/rest/projects/$projectId/metadata/featureCollections/catchment-area",
             "content": {
                 "fitness": {
                     "percentile": <Options>,
@@ -423,27 +378,37 @@ It should have the same capabilities for overview indicator and feature indicato
             }
         }
 
-## Metrics NEW [/{project}/metrics]
+## Indicators NEW [/{project}/indicators]
 
-### Get metrics [GET]
+### Get indicators [GET]
 
-Get all project metrics.
+Get all project indicators.
 
 #### TODO
-* Make sure we can automatically compute percentile, ntile, ranking, trend from each metric
+* Make sure we can automatically compute percentile, ntile, ranking, trend from each indicator metric query
+* Is it possible to compute automatically values for not georeferenced records?
 
 + Response 200 (application/json)
 
         [
             {
                 "id": "revenue",
-                "type": "metric",
+                "type": "indicator",
                 "title": "Revenue",
                 "description": "Total annual revenue",
-                "sort": "desc",
-                "format": {
-                    "type": "currency",
-                    "fraction": 0
+                "properties" : {
+                    "sort": "desc",
+                    "format": {
+                        "type": "currency",
+                        "fraction": 0
+                    },
+                    "distribution": "geometric",
+                    "intervals": 5
+                    "style": {
+                        "polygon": "polygon-blue-gradient",
+                        "heatmap": "heatmap-normal",
+                        "point": "circle-blue-gradient-5"
+                    },
                 },
                 "query": {
                     "type": "function_sum",
@@ -457,89 +422,95 @@ Get all project metrics.
             }
         ]
 
-## FeatureCollection [/{project}/featureCollection/index]
+## MarkerCollection [/{project}/markerCollection]
 
-### Get featureCollections [GET]
+### Get markerCollections [GET]
 
-Get all featureCollections.
-
-### TODO
-* How to create multiple store types?
+Get all markerCollections. Modified resource `featureCollections`
 
 ### Changes
-* EDITED `type` is always `featureCollection`
-* REMOVED `data` Real `dataset` is derived from active Indicator property
-* REMOVED `title` legend title and formatting is derived from `propertyId`
+* EDITED `type` is always `markerCollection`
+* EDITED `data` Changed to `dataset` - link to dataset is enough
+* EDITED `filter` Moved from data.filter, changed to default DWH filter
 * REMOVED `action.hover`
 * REMOVED `action.select` all params can be derived from `dataset` and `propertyId`, metadata from `infoPanel`
-* REMOVED `detailInfoPanel` defined in corresponding indicator metadata
+* REMOVED `detailInfoPanel` specified in markerSelector
 * REMOVED `groupInfoPanel` should have the same content as `infoPanel`
-* EDITED `defaultStyle` replaced with `distribution` and link for `style`
-* ADDED `style`
-* ADDED `options.distribution` any of 'geometric', 'linear' or array of thresholds, formerly `type=='static'`
+* EDITED `defaultStyle` replaced with `style` -- ID of predefined style
 
 + Response 200 (application/json)
 
         [
             {
-                "name": "catchment-area",
-                "type": "featureCollection",
-                "options": {
-                    "distribution": "geometric"
-                },
-                "style": "/rest/projects/$projectId/metadata/styles/polygon-blue-5"
+                "name": "stores-blue",
+                "type": "markerCollection",
+                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh"
+                "filter": [
+                    {
+                        "property": "storetype",
+                        "value": "blue",
+                        "operator": "eq"
+                    }
+                ],
+                "style": "marker-blue"
             },
             {
                 "name": "stores-pink",
-                "type": "featureCollection",
-                "style": "/rest/projects/$projectId/metadata/styles/pinpoint-pink"
+                "type": "markerCollection",
+                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh",
+                "filter": [
+                    {
+                        "property": "storetype",
+                        "value": "pink",
+                        "operator": "eq"
+                    }
+                ],
+                "style": "marker-pink"
             }
         ]
 
-## Styles NEW [/{project}/styles]
+## MarkerSelector [/{project}/{markerSelectorOverview}]
 
-### Get styles [GET]
+### Get markerSelector [GET]
 
-Get all project styles.
+Get markerSelector. This was previously fcSelector, but it can show only marker layers now.
 
-#### TODO
-* Design style for pinpoints
+### Changes
+* EDITED `type` is always `markerSelector`
 
 + Response 200 (application/json)
 
         [
             {
-                "name": "polygon-blue-5",
-                "type": "style",
-                "shape": "polygon",
-                "style": {
-                    "opacity": 1,
-                    "weight": 1,
-                    "fillColor": "#55a3ec",
-                    "color": [
-                        "#89bae7",
-                        "#6cace7",
-                        "#67a3dc",
-                        "#4494df",
-                        "#3391e9"
-                    ],
-                    "fillOpacity": [
-                        0.1,
-                        0.29,
-                        0.48,
-                        0.67,
-                        0.86
-                    ]
-                }
+                "type": "markerSelectorCategory",
+                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh",
+                "dashboard": "/rest/projects/$projectId/metadata/uicomponents/storeDashboard",
+                "layers": [
+                    {
+                        "markerCollection": "stores-blue",
+                        "visible": true
+                    },
+                    {
+                        "markerCollection": "stores-pink",
+                        "visible": true
+                    }
+                ]
             },
             {
-                "name": "pinpoint-pink",
-                "type": "style",
-                "shape": "pinpoint",
-                "style": {
-                    "color": "#FC42D2",
-                    "pinpoint": "pinpoint-pink",
-                    "iconUrl": "./img/icon-pinpoint-pink.png"
-                }
-            }            
+                "type": "markerSelectorCategory",
+                "dataset": "/rest/projects/$projectId/metadata/dataset/atm-dwh",
+                "dashboard": "/rest/projects/$projectId/metadata/uicomponents/atmDashboard",
+                "layers": [
+                    {
+                        "markerCollection": "atm-blue",
+                        "visible": false,
+                        "addOnExpand": true
+                    },
+                    {
+                        "markerCollection": "atm-pink",
+                        "visible": false,
+                        "addOnExpand": false
+                    }
+                ]
+            }
         ]
