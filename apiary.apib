@@ -23,7 +23,6 @@ PopUp content is automatically prepared according to feature `dataset`, selected
 ## Project NEW [/{project}/project]
 
 ### Get project [GET]
-
 Get default project settings. Other than `bootstrap/project`. MapOptions and ViewCategories were moved here.
 
 + Response 200 (application/json)
@@ -49,7 +48,42 @@ Get default project settings. Other than `bootstrap/project`. MapOptions and Vie
             }
         }
 
-## Datasets [/{project}/datasets]
+
+## ViewCategories [/{project}/md/viewCategories]
+List all View categories.
+
+#### TODO
+
++ Response 200 (application/json)
+
+        {
+            "content": [
+                {
+                    "id": "kdfjoi3nvs",
+                    "name": "storePerformance",
+                    "title": "Store Performance"
+                    "type": "viewCategory",
+                    "content": {
+                        "icon": "iconId"
+                    }
+                }
+            ]
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/viewCategory?page=1"
+                }
+            ],
+            "page": {
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "number": 0
+            }
+       }
+
+
+## Datasets [/{project}/md/datasets]
 
 ### Get datasets [GET]
 
@@ -71,134 +105,146 @@ markerCollections will be used instead.
 
 + Response 200 (application/json)
 
-        [
-            {
-                "name": "county-dwh",
-                "type": "dataset",
-                "title": "County",
-                "description": "Optional description of dataset",
-                "properties": {
-                    "featureTitle": <Expression>,
-                    "featureSubtitle": <Expression>
-                },
-                "ref": {
-                    "type": "dwh",
-                    "subtype": "geometryPolygon",
-                    "table": "county",
-                    "primaryKey": "area_code",
-                    "geometry": "zsjd-vt",
-                    "properties": [
-                        {
-                            "name": "nazev",
-                            "title": "název",
-                            "column": "nazev",
-                            "type": "string",
-                            "fullTextBoost": 8
-                        },
-                        {
-                            "name": "kod_zsj_d",
-                            "title": "kód ZSJD",
-                            "column": "kod_zsj_d",
-                            "type": "string"
-                        },
-                        {
-                            "name": "x_min",
-                            "column": "x_min",
-                            "type": "double"
-                        },
-                        {
-                            "name": "x_max",
-                            "column": "x_max",
-                            "type": "double"
-                        },
-                        {
-                            "name": "y_min",
-                            "column": "y_min",
-                            "type": "double"
-                        },
-                        {
-                            "name": "y_max",
-                            "column": "y_max",
-                            "type": "double"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "store-dwh",
-                "type": "dataset",
-                "title": "My Stores",
-                "description": "Description of my stores dataset",
-                "properties": {
-                    "featureTitle": <Expression>,
-                    "featureSubtitle": <Expression>
-                },
-                "ref": {
-                    "type": "dwh",
-                    "subtype": "geometryPoint",
-                    "table": "store_table",
-                    "primaryKey": "store_id",
-                    "properties": [
-                        {
-                            "name": "store_id",
-                            "title": "kod pobocky",
-                            "column": "id",
-                            "type": "string"
-                        },
-                        {
-                            "name": "nazev",
-                            "title": "název",
-                            "column": "nazev",
-                            "type": "string",
-                            "fullTextBoost": 4
-                        },
-                        {
-                            "name": "lng",
-                            "column": "lng",
-                            "type": "longitude"
-                        },
-                        {
-                            "name": "lat",
-                            "column": "lat",
-                            "type": "latitude"
-                        }
-                    ]
-                }
-            },
-            {
-                "name": "zsjd-vt",
-                "type": "dataset",
-                "title": "Vector tiles for ZSJD",
-                "description": "Optional description of dataset",
-                "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
-                "properties": {
-                    "zoom": {
-                        "min": 5,
-                        "max": 18,
-                        "optimal": 16
+        {
+            "content": [
+                {
+                   "id": "g3v3h6orb0thvd4i",
+                    "name": "county-dwh",
+                    "type": "dataset",
+                    "title": "County",
+                    "description": "Optional description of dataset",
+                    "properties": {
+                        "featureTitle": <Expression>,
+                        "featureSubtitle": <Expression>
+                    },
+                    "ref": {
+                        "type": "dwh",
+                        "subtype": "geometryPolygon",
+                        "table": "county",
+                        "primaryKey": "area_code",
+                        "geometry": "zsjd-vt",
+                        "properties": [
+                            {
+                                "name": "nazev",
+                                "title": "název",
+                                "column": "nazev",
+                                "type": "string",
+                                "fullTextBoost": 8
+                            },
+                            {
+                                "name": "kod_zsj_d",
+                                "title": "kód ZSJD",
+                                "column": "kod_zsj_d",
+                                "type": "string"
+                            },
+                            {
+                                "name": "x_min",
+                                "column": "x_min",
+                                "type": "double"
+                            },
+                            {
+                                "name": "x_max",
+                                "column": "x_max",
+                                "type": "double"
+                            },
+                            {
+                                "name": "y_min",
+                                "column": "y_min",
+                                "type": "double"
+                            },
+                            {
+                                "name": "y_max",
+                                "column": "y_max",
+                                "type": "double"
+                            }
+                        ]
                     }
                 },
-                "ref": {
-                    "type": "vt",
-                    "urlTemplate":"https://s3-eu-west-1.amazonaws.com/can-vector-tiles/zcoi9en758vkuuwu/zsjd/{z}/{x}/{y}.pbf"
+                {
+                    "id": "adc3h6orb0thvd4i",
+                    "name": "store-dwh",
+                    "type": "dataset",
+                    "title": "My Stores",
+                    "description": "Description of my stores dataset",
+                    "properties": {
+                        "featureTitle": <Expression>,
+                        "featureSubtitle": <Expression>
+                    },
+                    "ref": {
+                        "type": "dwh",
+                        "subtype": "geometryPoint",
+                        "table": "store_table",
+                        "primaryKey": "store_id",
+                        "properties": [
+                            {
+                                "name": "store_id",
+                                "title": "kod pobocky",
+                                "column": "id",
+                                "type": "string"
+                            },
+                            {
+                                "name": "nazev",
+                                "title": "název",
+                                "column": "nazev",
+                                "type": "string",
+                                "fullTextBoost": 4
+                            },
+                            {
+                                "name": "lng",
+                                "column": "lng",
+                                "type": "longitude"
+                            },
+                            {
+                                "name": "lat",
+                                "column": "lat",
+                                "type": "latitude"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "id": "fidkjo3ij3kfcm",
+                    "name": "zsjd-vt",
+                    "type": "dataset",
+                    "title": "Vector tiles for ZSJD",
+                    "description": "Optional description of dataset",
+                    "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
+                    "properties": {
+                        "zoom": {
+                            "min": 5,
+                            "max": 18,
+                            "optimal": 16
+                        }
+                    },
+                    "ref": {
+                        "type": "vt",
+                        "urlTemplate":"https://s3-eu-west-1.amazonaws.com/can-vector-tiles/zcoi9en758vkuuwu/zsjd/{z}/{x}/{y}.pbf"
+                    }
+                },
+                {
+                    "id": "oeik3jiojncs",
+                    "name": "kraj_wfs"
+                    "type": "dataset",
+                    "title": "kraj_wfs",
+                    "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
+                    "ref": {
+                        "type": "wfs",
+                        "workspace": "zcoi9en758vkuuwu",
+                        "layer": "kraj_wfs",
+                        "primaryKey": "kod_kraj",
+                        "properties": []
+                    }
                 }
-            },
-            {
-                "name": "kraj_wfs"
-                "type": "dataset",
-                "title": "kraj_wfs",
-                "origin": "https://secure.cleveranalytics.com/rest/projects/zcoi9en758vkuuwu",
-                "ref": {
-                    "type": "wfs",
-                    "workspace": "zcoi9en758vkuuwu",
-                    "layer": "kraj_wfs",
-                    "primaryKey": "kod_kraj",
-                    "properties": []
+            ],
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/datasets?page=1"
                 }
             }
-        ]
+       }
 
-## Views [/{project}/views]
+## Views [/{project}/md/views]
 
 ### Get views [GET]
 
@@ -225,30 +271,48 @@ Get all views.
 
 + Response 200 (application/json)
 
-        [
-            {
-                "name": "area-overview",
-                "type": "view",
-                "category": "base",
-                "content": {
+        {
+            "content": [
+                {
+                    "id": "vfoi3jokcajkc",
+                    "name": "area-overview",
+                    "type": "view",
                     "title": "Revenue Overview",
                     "description": "Visualization of branch revenues across country",
-                    "icon": "blue-1",
-                    "dashboard": "/rest/projects/$projectId/metadata/uicomponents/overviewDashboard",
-                    "markerSelector": "/rest/projects/$projectId/metadata/uicomponents/markerSelectorStore",
-                    "filterGroup": {},
-                    "granularity": [
-                        "zsjd-vt",
-                        "okres-vt",
-                        "customers"
-                    ],
-                    "addressSearch": ["address-points", "address-streets"]
-                },
-                "mapOptions": <MapOptions>
+                    "content": {
+                        "viewCategory": "/rest/projects/$projectId/md/viewCategories?name=storePerformance",
+                        "icon": "blue-1",
+                        "dashboard": "/rest/projects/$projectId/md/dashboards?name=overviewDashboard",
+                        "markerSelector": "/rest/projects/$projectId/md/markerSelector?name=markerSelectorStore",
+                        "filterGroup": {}
+                        "granularity": [
+                            "zsjd-vt",
+                            "okres-vt",
+                            "customers"
+                        ],
+                         "addressSearch": [
+                            "/rest/projects/$projectId/md/datasets?name=overviewDashboardaddress-points",
+                            "/rest/projects/$projectId/md/datasets?name=address-streets"
+                        ],
+                        "mapOptions": <MapOptions>
+                    }
+                }
+            ],
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/views?page=1"
+                }
+            ],
+            "page": {
+                "size": 20,
+                "totalElements": 3,
+                "totalPages": 1,
+                "number": 0
             }
-        ]
+       }
 
-## Dashboard [/{project}/{overviewDashboard}]
+## Dashboard [/{project}/md/dashboards?name=overviewDashboard]
 
 ### Get dashboard metadata [GET]
 
@@ -286,14 +350,15 @@ Array of components. It's always possible to drill down this.
 + Response 200 (application/json)
 
         {
+            "id": "ov3oif2mlkfsjas",
             "name": "overviewDashboard",
             "type": "dashboard",
             "content": {
-                "indicator": [
+                "indicators": [
                     {
                         "id": "revenue",
-                        "fitness":  "percentile",
-                        "indicatorDetail": "/rest/projects/$projectId/metadata/uicomponents/revenueIndicator"
+                        "fitness": "percentile",
+                        "indicatorDetail": "/rest/projects/$projectId/md/indicators?name=revenueIndicator"
                     }
                 ],
                 "grid": [
@@ -305,7 +370,7 @@ Array of components. It's always possible to drill down this.
             }
         }
 
-## IndicatorDetail [/{project}/{revenueIndicator}]
+## IndicatorDetail [/{project}/md/indicators?name={revenueIndicator}]
 
 Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
 It should have the same capabilities for overview indicator and feature indicator.
@@ -323,7 +388,7 @@ It should have the same capabilities for overview indicator and feature indicato
 * How to compute chart values, categories, formulas
 
 #### Changes
-* EDITED `type` is `indicatorDetail`
+* EDITED `type` is `indicator`
 * REMOVED `featureCollection` added/updated automatically based on granularity and feature filters
 * REMOVED `content.title` and `content.subtitle` replaced with former `content.businessGoal`
 * REMOVED `content.businessGoal` computed automatically from parameter **propertyId**
@@ -339,8 +404,9 @@ It should have the same capabilities for overview indicator and feature indicato
 + Response 200 (application/json)
 
         {
+            "id": "ri3jckaclkanesa",
             "name": "revenueIndicator",
-            "type": "indicatorDetail",
+            "type": "indicator",
             "content": {
                 "blocks": [
                     {
@@ -377,7 +443,7 @@ It should have the same capabilities for overview indicator and feature indicato
             }
         }
 
-## Indicators NEW [/{project}/indicators]
+## Indicators NEW [/{project}/md/indicators]
 
 ### Get indicators [GET]
 
@@ -389,46 +455,61 @@ Get all project indicators.
 
 + Response 200 (application/json)
 
-        [
-            {
-                "id": "revenue",
-                "type": "indicator",
-                "title": "Revenue",
-                "description": "Total annual revenue",
-                "properties" : {
-                    "sort": "desc",
-                    "format": {
-                        "type": "currency",
-                        "fraction": 0
-                    },
-                    "distribution": "geometric",
-                    "intervals": 5,
-                    "style": {
-                        "polygon": "polygon-blue-gradient",
-                        "heatmap": "heatmap-normal",
-                        "point": "circle-blue-gradient-5"
-                    }
-                },
-                "query": {
-                    "type": "function_sum",
-                    "content": [
-                        {
-                            "type": "property",
-                            "value": "stores_dwh.revenue"
+        {
+            "content": [
+                {
+                    "id": "g3v3h6orb0thvd4i",
+                    "name": "revenue",
+                    "type": "indicator",
+                    "title": "Revenue",
+                    "description": "Total annual revenue",
+                    "content" : {
+                        "sort": "desc",
+                        "format": {
+                            "type": "currency",
+                            "fraction": 0
+                        },
+                        "distribution": "geometric",
+                        "intervals": 5
+                        "style": {
+                            "polygon": "polygon-blue-gradient",
+                            "heatmap": "heatmap-normal",
+                            "point": "circle-blue-gradient-5"
                         }
-                    ]
+                        "query": {
+                            "type": "function_sum",
+                            "content": [
+                                {
+                                    "type": "property",
+                                    "value": "stores_dwh.revenue"
+                                }
+                            ]
+                        }
+                    }
                 }
+            ],
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/indicators?page=1"
+                }
+            ],
+            "page": {
+                "size": 20,
+                "totalElements": 1,
+                "totalPages": 1,
+                "number": 0
             }
-        ]
+        }
 
-## MarkerCollection [/{project}/markerCollection]
+## Markers [/{project}/md/markers]
 
-### Get markerCollections [GET]
+### Get all markers [GET]
 
-Get all markerCollections. Modified resource `featureCollections`
+Get all markers. Modified resource `featureCollections`
 
 ### Changes
-* EDITED `type` is always `markerCollection`
+* EDITED `type` is always `marker`
 * EDITED `data` Changed to `dataset` - link to dataset is enough
 * EDITED `filter` Moved from data.filter, changed to default DWH filter
 * REMOVED `action.hover`
@@ -439,36 +520,56 @@ Get all markerCollections. Modified resource `featureCollections`
 
 + Response 200 (application/json)
 
-        [
-            {
-                "name": "stores-blue",
-                "type": "markerCollection",
-                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh"
-                "filter": [
-                    {
-                        "property": "storetype",
-                        "value": "blue",
-                        "operator": "eq"
+        {
+            "content": [
+                {
+                    "id": "st3fdkwlafdsl",
+                    "name": "stores-blue",
+                    "type": "marker",
+                    "content": {
+                        "dataset": "/rest/projects/$projectId/md/datasets?name=store-dwh"
+                        "filter": [
+                            {
+                                "property": "storetype",
+                                "value": "blue",
+                                "operator": "eq"
+                            }
+                        ],
+                        "style": "marker-blue"
                     }
-                ],
-                "style": "marker-blue"
-            },
-            {
-                "name": "stores-pink",
-                "type": "markerCollection",
-                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh",
-                "filter": [
-                    {
-                        "property": "storetype",
-                        "value": "pink",
-                        "operator": "eq"
+                },
+                {
+                    "id": "pk3kljcalksaf",
+                    "name": "stores-pink",
+                    "type": "marker",
+                    "content": {
+                        "dataset": "/rest/projects/$projectId/md/datasets?name=store-dwh",
+                        "filter": [
+                            {
+                                "property": "storetype",
+                                "value": "pink",
+                                "operator": "eq"
+                            }
+                        ],
+                        "style": "marker-pink"
                     }
-                ],
-                "style": "marker-pink"
+                }
+            ],
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/markers?page=1"
+                }
+            ],
+            "page": {
+                "size": 20,
+                "totalElements": 2,
+                "totalPages": 1,
+                "number": 0
             }
         ]
 
-## MarkerSelector [/{project}/{markerSelectorOverview}]
+## MarkerSelector [/{project}/md/markerSelectors?name={markerSelectorOverview}]
 
 ### Get markerSelector [GET]
 
@@ -479,37 +580,57 @@ Get markerSelector. This was previously fcSelector, but it can show only marker 
 
 + Response 200 (application/json)
 
-        [
-            {
-                "type": "markerSelectorCategory",
-                "dataset": "/rest/projects/$projectId/metadata/dataset/store-dwh",
-                "dashboard": "/rest/projects/$projectId/metadata/uicomponents/storeDashboard",
-                "layers": [
-                    {
-                        "markerCollection": "stores-blue",
-                        "visible": true
-                    },
-                    {
-                        "markerCollection": "stores-pink",
-                        "visible": true
+        {
+            "content": [
+                {
+                    "id": "ms8j8rjfdkaj",
+                    "type": "markerSelector",
+                    "content": {
+                        "dataset": "/rest/projects/$projectId/md/datasets?name=store-dwh",
+                        "dashboard": "/rest/projects/$projectId/md/dashboards?name=storeDashboard",
+                        "layers": [
+                            {
+                                "marker": "/rest/projects/$projectId/md/markers?name=stores-blue",
+                                "visible": true
+                            },
+                            {
+                                "marker": "/rest/projects/$projectId/md/markers?name=stores-pink",
+                                "visible": true
+                            }
+                        ]
                     }
-                ]
-            },
-            {
-                "type": "markerSelectorCategory",
-                "dataset": "/rest/projects/$projectId/metadata/dataset/atm-dwh",
-                "dashboard": "/rest/projects/$projectId/metadata/uicomponents/atmDashboard",
-                "layers": [
-                    {
-                        "markerCollection": "atm-blue",
-                        "visible": false,
-                        "addOnExpand": true
-                    },
-                    {
-                        "markerCollection": "atm-pink",
-                        "visible": false,
-                        "addOnExpand": false
+                },
+                {
+                    "id": "ms8j8rjfdkaj",
+                    "type": "markerSelector",
+                    "content": {
+                        "dataset": "/rest/projects/$projectId/md/datasets?name=store-dwh",
+                        "dashboard": "/rest/projects/$projectId/md/dashboards?name=atmDashboard",
+                        "layers": [
+                            {
+                                "marker": "/rest/projects/$projectId/md/markers?name=atm-blue",
+                                "visible": false,
+                                "addOnExpand": true
+                            },
+                            {
+                                "marker": "/rest/projects/$projectId/md/markers?name=atm-pink",
+                                "visible": false,
+                                "addOnExpand": false
+                            }
+                        ]
                     }
-                ]
+                }
+            ],
+            "links": [
+                {
+                    "rel": "self",
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/markers?page=1"
+                }
+            ],
+            "page": {
+                "size": 20,
+                "totalElements": 2,
+                "totalPages": 1,
+                "number": 0
             }
-        ]
+        }
