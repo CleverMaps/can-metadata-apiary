@@ -23,7 +23,7 @@ PopUp content is automatically prepared according to feature `dataset`, selected
 ## Project NEW [/{project}/project]
 
 ### Get project [GET]
-
+# JZ: navrhuji zrusit a "language" klic pridat pripadne k /rest/projects/{project}
 Get default project settings. Other than `bootstrap/project`. MapOptions and ViewCategories were moved here.
 
 + Response 200 (application/json)
@@ -31,12 +31,14 @@ Get default project settings. Other than `bootstrap/project`. MapOptions and Vie
         {
             "type": "project",
             "language": "en",
+            # JZ: navrhuju presinout pod samostatny typ metadata objektu
             "viewCategories": [
                 {
                     "name": "overview",
                     "title": "Store Performance"
                 }
             ],
+            # JZ: nemůže být mapOptions definované per pohled? Co když bude každý pohled primárně jiný stát/oblast?
             "mapOptions": {
                 "center": {
                     "lat": 49.8,
@@ -281,17 +283,17 @@ Get all views.
                     "title": "Revenue Overview",
                     "description": "Visualization of branch revenues across country",
                     "content": {
-	                "viewCategory": "/rest/projects/$projectId/md/viewCategories?name=storePerformance",
+                        "viewCategory": "/rest/projects/$projectId/md/viewCategories?name=storePerformance",
                         "icon": "blue-1",
                         "dashboard": "/rest/projects/$projectId/md/dashboards?name=overviewDashboard",
-	                "markerSelector": "/rest/projects/$projectId/md/markerSelector?name=markerSelectorStore",
+                        "markerSelector": "/rest/projects/$projectId/md/markerSelector?name=markerSelectorStore",
                         "filterGroup": {}
                         "granularity": [
-		            "zsjd-vt",
-		            "okres-vt",
-		            "customers"
-		        ],
-		        "addressSearch": [
+                            "zsjd-vt",
+                            "okres-vt",
+                            "customers"
+                        ],
+                         "addressSearch": [
                             "/rest/projects/$projectId/md/datasets?name=overviewDashboardaddress-points",
                             "/rest/projects/$projectId/md/datasets?name=address-streets"
                         ]
@@ -370,7 +372,7 @@ Array of components. It's always possible to drill down this.
             }
         }
 
-## IndicatorDetail [/{project}/md/indicators?name={revenueIndicator}]
+## Indicator [/{project}/md/indicators?name={revenueIndicator}]
 
 Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
 It should have the same capabilities for overview indicator and feature indicator.
@@ -388,7 +390,7 @@ It should have the same capabilities for overview indicator and feature indicato
 * How to compute chart values, categories, formulas
 
 #### Changes
-* EDITED `type` is `indicatorDetail`
+* EDITED `type` is `indicator`
 * REMOVED `featureCollection` added/updated automatically based on granularity and feature filters
 * REMOVED `content.title` and `content.subtitle` replaced with former `content.businessGoal`
 * REMOVED `content.businessGoal` computed automatically from parameter **propertyId**
@@ -406,7 +408,7 @@ It should have the same capabilities for overview indicator and feature indicato
         {
             "id": "ri3jckaclkanesa",
             "name": "revenueIndicator",
-            "type": "indicatorDetail",
+            "type": "indicator",
             "content": {
                 "blocks": [
                     {
@@ -501,15 +503,15 @@ Get all project indicators.
                 "number": 0
             }
         }
-            
-## MarkerCollection [/{project}/md/markers]
 
-### Get markerCollections [GET]
+## Markers [/{project}/md/markers]
 
-Get all markerCollections. Modified resource `featureCollections`
+### Get all markers [GET]
+
+Get all markers. Modified resource `featureCollections`
 
 ### Changes
-* EDITED `type` is always `markerCollection`
+* EDITED `type` is always `marker`
 * EDITED `data` Changed to `dataset` - link to dataset is enough
 * EDITED `filter` Moved from data.filter, changed to default DWH filter
 * REMOVED `action.hover`
