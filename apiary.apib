@@ -23,7 +23,6 @@ PopUp content is automatically prepared according to feature `dataset`, selected
 ## Project NEW [/{project}/project]
 
 ### Get project [GET]
-# JZ: navrhuji zrusit a "language" klic pridat pripadne k /rest/projects/{project}
 Get default project settings. Other than `bootstrap/project`. MapOptions and ViewCategories were moved here.
 
 + Response 200 (application/json)
@@ -31,14 +30,12 @@ Get default project settings. Other than `bootstrap/project`. MapOptions and Vie
         {
             "type": "project",
             "language": "en",
-            # JZ: navrhuju presinout pod samostatny typ metadata objektu
             "viewCategories": [
                 {
                     "name": "overview",
                     "title": "Store Performance"
                 }
             ],
-            # JZ: nemůže být mapOptions definované per pohled? Co když bude každý pohled primárně jiný stát/oblast?
             "mapOptions": {
                 "center": {
                     "lat": 49.8,
@@ -296,7 +293,8 @@ Get all views.
                          "addressSearch": [
                             "/rest/projects/$projectId/md/datasets?name=overviewDashboardaddress-points",
                             "/rest/projects/$projectId/md/datasets?name=address-streets"
-                        ]
+                        ],
+                        "mapOptions": <MapOptions>
                     }
                 }
             ],
@@ -360,7 +358,7 @@ Array of components. It's always possible to drill down this.
                     {
                         "id": "revenue",
                         "fitness": "percentile",
-                        "indicator": "/rest/projects/$projectId/md/indicators?name=revenueIndicator"
+                        "indicatorDetail": "/rest/projects/$projectId/md/indicators?name=revenueIndicator"
                     }
                 ],
                 "grid": [
@@ -372,7 +370,7 @@ Array of components. It's always possible to drill down this.
             }
         }
 
-## Indicator [/{project}/md/indicators?name={revenueIndicator}]
+## IndicatorDetail [/{project}/md/indicators?name={revenueIndicator}]
 
 Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
 It should have the same capabilities for overview indicator and feature indicator.
@@ -635,4 +633,4 @@ Get markerSelector. This was previously fcSelector, but it can show only marker 
                 "totalPages": 1,
                 "number": 0
             }
-        ]
+        }
