@@ -8,11 +8,8 @@ Draft of new metadata for redesigned CleverAnalytics Platform
 ## TODO
 * Is it necessary to use complete URLs for datasets, markerSelectors, markerCollections etc.?
 * Design filter metadata
-* Transform `groups.json`, could define available granularity, no zoom settings
-* How to find out polygon granularity?
 * How to decide what should be searched? Addresses almost always, then all features that can be in view.
 * How to save and share application state?
-* Could we remove FeatureCollections at all? Replace with styles...
 
 ## PopUp
 
@@ -28,8 +25,6 @@ PopUp content is automatically prepared according to feature `dataset`, selected
 ### Get project [GET]
 
 Get default project settings. Other than `bootstrap/project`. MapOptions and ViewCategories were moved here.
-
-#### TODO
 
 + Response 200 (application/json)
 
@@ -210,7 +205,6 @@ markerCollections will be used instead.
 Get all views.
 
 #### TODO
-* Remove `invisibleFeatureCollections`. Enable universal address search differently.
 * How to change filters from `filterGroup`?
 
 #### Changes
@@ -225,6 +219,9 @@ Get all views.
 * REMOVED `content.filters` - dropdown filter is removed (currently used for market share views)
 * ADDED `content.icon` simplified `landing.icon`, no type, just image ID
 * ADDED `content.description` description from `landing`
+* ADDED `content.granularity` list of geometry datasets to select granularity. First is the default.
+* EDITED `content.markerSelector` renamed from `fcSelector`
+* ADDED `content.addressSearch` list of datasets to be searched but not displayed
 
 + Response 200 (application/json)
 
@@ -238,8 +235,14 @@ Get all views.
                     "description": "Visualization of branch revenues across country",
                     "icon": "blue-1",
                     "dashboard": "/rest/projects/$projectId/metadata/uicomponents/overviewDashboard",
-                    "fcSelector": "/rest/projects/$projectId/metadata/uicomponents/fcSelector",
-                    "filterGroup": {}
+                    "markerSelector": "/rest/projects/$projectId/metadata/uicomponents/markerSelectorStore",
+                    "filterGroup": {},
+                    "granularity": [
+                        "zsjd-vt",
+                        "okres-vt",
+                        "customers"
+                    ],
+                    "addressSearch": ["address-points", "address-streets"]
                 },
                 "mapOptions": <MapOptions>
             }
@@ -254,14 +257,9 @@ Now the dashboard for view should have the same capabilities
 as dashboard for selected feature (marker, polygon etc.).
 
 #### Parameters
-* **name** - referenced in `view` or `featureCollection`
+* **name** - referenced in `view` or `markerSelectorCategory`
 * **id** (optional) - if feature is selected
 * **dataset** (optional) - if feature is selected
-
-#### TODO
-* Compute property values from feature or catchment-area or radius query?
-* Define complete fitness object (style, format, mouseover behavior)
-* Could be blocks on dashboard?
 
 #### Changes (vs. infoPanel)
 * EDITED `type` is dashboard
@@ -321,12 +319,8 @@ It should have the same capabilities for overview indicator and feature indicato
 * **featureDataset** (optional) - if feature is selected, potentially recursive
 
 #### TODO
-* Unify fitness attributes - compute automatically `property(_percentile|_trend|_rank)`
-* Define `blocks` content
-* Define `fitness` options, maybe not necessary
-* Barcharts/Piecharts from map categories?
+* Barcharts from map categories?
 * How to compute chart values, categories, formulas
-* How to preserve block settings on feature change
 
 #### Changes
 * EDITED `type` is `indicatorDetail`
@@ -348,10 +342,6 @@ It should have the same capabilities for overview indicator and feature indicato
             "name": "revenueIndicator",
             "type": "indicatorDetail",
             "content": {
-                "fitness": {
-                    "percentile": <Options>,
-                    "trend": <Options>
-                },
                 "blocks": [
                     {
                         "type": "histogram"
@@ -373,6 +363,15 @@ It should have the same capabilities for overview indicator and feature indicato
                         "title": "Revenue per day of week",
                         "mainSplit": "day",
                         "tooltip": <Expression>
+                    },
+                    {
+                        "type": "grid",
+                        "content": [
+                            {
+                                "propertyId": "revenue_share",
+                                "fitness": "trend"
+                            }
+                        ]
                     }
                 ]
             }
@@ -403,12 +402,12 @@ Get all project indicators.
                         "fraction": 0
                     },
                     "distribution": "geometric",
-                    "intervals": 5
+                    "intervals": 5,
                     "style": {
                         "polygon": "polygon-blue-gradient",
                         "heatmap": "heatmap-normal",
                         "point": "circle-blue-gradient-5"
-                    },
+                    }
                 },
                 "query": {
                     "type": "function_sum",
