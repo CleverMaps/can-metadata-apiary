@@ -6,7 +6,7 @@ HOST: https://secure.cleveranalytics.com/rest/projects/
 Draft of new metadata for redesigned CleverAnalytics Platform
 
 ## TODO
-* Is it necessary to use complete URLs for datasets, markerSelectors, markerCollections etc.?
+* Is it necessary to use complete URLs for datasets, markerSelectors, markers etc.?
 * Design filter metadata
 * How to decide what should be searched? Addresses almost always, then all features that can be in view.
 * How to save and share application state?
@@ -65,13 +65,19 @@ List all View categories.
                     "type": "viewCategory",
                     "content": {
                         "icon": "iconId"
-                    }
+                    },
+                    "links": [
+                        {
+                            "rel": "self",
+                            "href": "/rest/projects/o3d2ov0p43msl3hf/md/viewCategories/kdfjoi3nvs"
+                        }
+                    ],
                 }
-            ]
+            ],
             "links": [
                 {
                     "rel": "self",
-                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/viewCategory?page=1"
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/viewCategories?page=1"
                 }
             ],
             "page": {
@@ -242,7 +248,8 @@ markerCollections will be used instead.
                     "href": "/rest/projects/o3d2ov0p43msl3hf/md/datasets?page=1"
                 }
             }
-       }
+        }
+       
 
 ## Views [/{project}/md/views]
 
@@ -310,7 +317,7 @@ Get all views.
                 "totalPages": 1,
                 "number": 0
             }
-       }
+        }
 
 ## Dashboard [/{project}/md/dashboards?name=overviewDashboard]
 
@@ -345,7 +352,7 @@ as dashboard for selected feature (marker, polygon etc.).
 Array of components. It's always possible to drill down this.
 * id: indicator ID, can be found in `/metrics` resource
 * fitness: type of fitness indicator visualization - `percentile` or  `trend`
-* indicatorDetail: drill down indicator metadata
+* indicatorDrill: drill down indicator metadata
 
 + Response 200 (application/json)
 
@@ -358,7 +365,7 @@ Array of components. It's always possible to drill down this.
                     {
                         "id": "revenue",
                         "fitness": "percentile",
-                        "indicatorDetail": "/rest/projects/$projectId/md/indicators?name=revenueIndicator"
+                        "indicatorDrill": "/rest/projects/$projectId/md/indicatorDrills?name=revenueIndicatorDrill"
                     }
                 ],
                 "grid": [
@@ -370,12 +377,12 @@ Array of components. It's always possible to drill down this.
             }
         }
 
-## IndicatorDetail [/{project}/md/indicators?name={revenueIndicator}]
+## IndicatorDrill [/{project}/md/indicatorDrills?name={revenueIndicatorDrill}]
 
 Get indicator infoPanel metadata. Formerly known as **businessGoalDetail**.
 It should have the same capabilities for overview indicator and feature indicator.
 
-### Get indicator detail metadata [GET]
+### Get indicator drill metadata [GET]
 
 #### Parameters
 * **name** - referenced in `view`
@@ -405,8 +412,8 @@ It should have the same capabilities for overview indicator and feature indicato
 
         {
             "id": "ri3jckaclkanesa",
-            "name": "revenueIndicator",
-            "type": "indicator",
+            "name": "revenueIndicatorDrill",
+            "type": "indicatorDrill",
             "content": {
                 "blocks": [
                     {
@@ -475,7 +482,7 @@ Get all project indicators.
                             "polygon": "polygon-blue-gradient",
                             "heatmap": "heatmap-normal",
                             "point": "circle-blue-gradient-5"
-                        }
+                        },
                         "query": {
                             "type": "function_sum",
                             "content": [
@@ -507,6 +514,10 @@ Get all project indicators.
 ### Get all markers [GET]
 
 Get all markers. Modified resource `featureCollections`
+
+### TODO
+
+* `dataset` can be inherited from `markerSelector`
 
 ### Changes
 * EDITED `type` is always `marker`
@@ -567,7 +578,7 @@ Get all markers. Modified resource `featureCollections`
                 "totalPages": 1,
                 "number": 0
             }
-        ]
+        }
 
 ## MarkerSelector [/{project}/md/markerSelectors?name={markerSelectorOverview}]
 
@@ -624,7 +635,7 @@ Get markerSelector. This was previously fcSelector, but it can show only marker 
             "links": [
                 {
                     "rel": "self",
-                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/markers?page=1"
+                    "href": "/rest/projects/o3d2ov0p43msl3hf/md/markerSelectors?page=1"
                 }
             ],
             "page": {
